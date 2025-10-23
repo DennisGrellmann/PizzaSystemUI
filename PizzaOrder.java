@@ -22,7 +22,34 @@ public class PizzaOrder {
     public static final double garlicBreadPrice = 4.00; //Per Item
     public static final double softDrinkPrice = 3.00; //Per Item
 
+    public PizzaOrder(int orderId, String pizzaType, char pizzaSize, int quantity,
+                      boolean extraCheese, boolean extraOlives,
+                      int garlicBreadCount, int softDrinkCount) {
+        this.orderId = orderId;
+        this.pizzaType = pizzaType;
+        this.pizzaSize = pizzaSize;
+        this.quantity = quantity;
+        this.extraCheese = extraCheese;
+        this.extraOlives = extraOlives;
+        this.garlicBreadCount = garlicBreadCount;
+        this.softDrinkCount = softDrinkCount;
+
+        CalculateCosts();
+    } 
+    // Check and standardise the input for pizza type
+    private String PizzaTypeCheck(String t) {
+        if (t == null) return "";
+        t = t.trim();
+        if (t.length() == 0) return t;
+        String lower = t.toLowerCase();
+        if (lower.equals("margherita")) return "Margherita";
+        if (lower.equals("neapolitan")) return "Neapolitan";
+        if (lower.equals("marinara")) return "Marinara";
+        return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+    } 
+    // Pizza price selection
     private double getPizzaBasePrice() {
+
         String type = pizzaType.toLowerCase();
         switch (type) {
             case "margherita":
@@ -34,5 +61,27 @@ public class PizzaOrder {
             default:
                 return 0.0;
         }
+    }
+    // Calculate costs
+    public void CalculateCosts() {
+        double basePrice = getPizzaBasePrice();
+        addOnsCost = 0.0;
+
+        if (extraCheese) {
+            addOnsCost += extraCheesePrice * quantity;
+        }
+        if (extraOlives) {
+            addOnsCost += extraOlivesPrice * quantity;
+        }
+        addOnsCost += (garlicBreadPrice * garlicBreadCount);
+        addOnsCost += (softDrinkPrice * softDrinkCount);
+        this.addOnsCost = round(this.addOnsCost);
+        this.tax = round(subtotal * taxRate);
+        this.subtotal = round((basePrice * quantity));
+        this.totalCost = round(subtotal + tax);
+    }
+    // Round to 2 decimal place function
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
