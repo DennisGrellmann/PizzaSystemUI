@@ -84,4 +84,28 @@ public class PizzaOrder {
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
+    // Encapsulation from W3Schools https://www.w3schools.com/java/java_encapsulation.asp
+    // Getters
+    public int getOrderId() {return orderId;}
+    public String getPizzaType() {return pizzaType;}
+    public char getPizzaSize() {return pizzaSize;}
+    public int getQuantity() {return quantity;}
+    public boolean hasExtraCheese() {return extraCheese;}
+    public boolean hasExtraOlives() {return extraOlives;}
+    public int getGarlicBreadCount() {return garlicBreadCount;}
+    public int getSoftDrinkCount() {return softDrinkCount;}
+    public double getAddOnsCost() {return addOnsCost;}
+    public double getSubtotal() {return subtotal;}
+    public double getTax() {return tax;}
+    public double getTotalCost() {return totalCost;}    
+    //Setters
+    public void setPizzaType(String pizzaType) {this.pizzaType = PizzaTypeCheck(pizzaType);}
+    public void setPizzaSize(char pizzaSize) {this.pizzaSize = pizzaSize;}
+    public void setQuantity(int quantity) {this.quantity = quantity;}
+    public void setExtraCheese(boolean extraCheese) {this.extraCheese = extraCheese;}
+    public void setExtraOlives(boolean extraOlives) {this.extraOlives = extraOlives;}
+    public void setGarlicBreadCount(int garlicBreadCount) {this.garlicBreadCount = garlicBreadCount;}
+    public void setSoftDrinkCount(int softDrinkCount) {this.softDrinkCount = softDrinkCount;}
+
+
 }
