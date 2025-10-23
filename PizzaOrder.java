@@ -76,8 +76,8 @@ public class PizzaOrder {
         addOnsCost += (garlicBreadPrice * garlicBreadCount);
         addOnsCost += (softDrinkPrice * softDrinkCount);
         this.addOnsCost = round(this.addOnsCost);
+        this.subtotal = round((basePrice * quantity)+ addOnsCost);
         this.tax = round(subtotal * taxRate);
-        this.subtotal = round((basePrice * quantity));
         this.totalCost = round(subtotal + tax);
     }
     // Round to 2 decimal place function
@@ -109,7 +109,13 @@ public class PizzaOrder {
 
     // Save and Load helpers
     public String toSave() {
-        return String.format("%d , %s , %c , %d , %.2f , %.2f , %.2f , %.2f", orderId, pizzaType, pizzaSize, quantity, addOnsCost, subtotal, tax, totalCost, (extraCheese ? 1 : 0), (extraOlives ? 1 : 0), garlicBreadCount, softDrinkCount);
+            return String.format(
+        "%d , %s , %c , %d , %.2f , %.2f , %.2f , %.2f , %d , %d , %d , %d",
+        orderId, pizzaType, pizzaSize, quantity,
+        addOnsCost, subtotal, tax, totalCost,
+        (extraCheese ? 1 : 0), (extraOlives ? 1 : 0),
+        garlicBreadCount, softDrinkCount
+    );
     }
 
     public static PizzaOrder fromSave(String line) throws Exception {
@@ -144,4 +150,52 @@ public class PizzaOrder {
     );
 
 }
+// Drop this inside PizzaOrder (e.g., near the bottom)
+public static void main(String[] args) throws Exception {
+    System.out.println("== PizzaOrder Self-Test ==");
+
+    // A) Constructor calc (Margherita, M, qty=2, no add-ons)
+    PizzaOrder a = new PizzaOrder(1, "Margherita", 'M', 2, false, false, 0, 0);
+    System.out.println("\n[A] Base order (expect subtotal=20.00, tax=2.00, total=22.00)");
+    System.out.println(a);
+
+    // B) Change fields via setters; then recalc
+    a.setExtraCheese(true);
+    a.setExtraOlives(true);
+    a.setGarlicBreadCount(1);
+    a.setSoftDrinkCount(2);
+    a.CalculateCosts(); // IMPORTANT: your setters do NOT auto-recalc
+    System.out.println("\n[B] After add-ons (expect addons=15.00, subtotal=35.00, tax=3.50, total=38.50)");
+    System.out.println(a);
+
+    // C) Save → Load round-trip
+    String line = a.toSave();
+    System.out.println("\n[C] Save line:");
+    System.out.println(line);
+
+    PizzaOrder b = PizzaOrder.fromSave(line);
+    System.out.println("\nLoaded back from save:");
+    System.out.println(b);
+
+    // D) Type normalization via setter + recalc
+    PizzaOrder c = new PizzaOrder(2, "mArInArA", 's', 1, false, false, 0, 0);
+    System.out.println("\n[D] Constructor keeps raw type; setter applies normalization:");
+    System.out.println("Before setPizzaType: " + c.pizzaType + " (" + c.pizzaSize + ")");
+    c.setPizzaType("mArInArA"); // applies PizzaTypeCheck
+    c.setPizzaSize('l');
+    c.CalculateCosts();
+    System.out.println("After  setPizzaType: " + c.pizzaType + " (" + c.pizzaSize + ")");
+    System.out.println(c);
+
+    // Quick sanity notes to help you spot issues
+    System.out.println("\n== Notes ==");
+    System.out.println("- If [B] totals do NOT match expected, check CalculateCosts():");
+    System.out.println("  * subtotal should be (basePrice*qty) + addOnsCost BEFORE tax");
+    System.out.println("  * tax should be subtotal * taxRate");
+    System.out.println("  * total should be subtotal + tax");
+    System.out.println("- Your toSave() format currently outputs only 8 numeric fields; extras/GB/SD");
+    System.out.println("  are not actually included because the format string has only 8 placeholders.");
+    System.out.println("  If you want full restore, include those fields in the format string as well.");
+}
+
 }
