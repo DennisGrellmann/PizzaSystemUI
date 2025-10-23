@@ -107,5 +107,41 @@ public class PizzaOrder {
     public void setGarlicBreadCount(int garlicBreadCount) {this.garlicBreadCount = garlicBreadCount;}
     public void setSoftDrinkCount(int softDrinkCount) {this.softDrinkCount = softDrinkCount;}
 
+    // Save and Load helpers
+    public String toSave() {
+        return String.format("%d , %s , %c , %d , %.2f , %.2f , %.2f , %.2f", orderId, pizzaType, pizzaSize, quantity, addOnsCost, subtotal, tax, totalCost, (extraCheese ? 1 : 0), (extraOlives ? 1 : 0), garlicBreadCount, softDrinkCount);
+    }
 
+    public static PizzaOrder fromSave(String line) throws Exception {
+        String[] p = line.split("\\s*,\\s*");
+        if (p.length < 8) {
+            throw new Exception("Invalid save data");
+        }
+        int orderId = Integer.parseInt(p[0]);
+        String pizzaType = p[1];
+        char pizzaSize = p[2].trim().charAt(0);
+        int quantity = Integer.parseInt(p[3]);
+        //p4-7 are calculated values
+        boolean extraCheese = p.length > 8 ? parseIntasBool(p[8]) : false;
+        boolean extraOlives = p.length > 9 ? parseIntasBool(p[9]) : false;
+        int garlicBreadCount = p.length > 10 ? Integer.parseInt(p[10]) : 0;
+        int softDrinkCount = p.length > 11 ? Integer.parseInt(p[11]) : 0;
+        return new PizzaOrder(orderId, pizzaType, pizzaSize, quantity, extraCheese, extraOlives, garlicBreadCount, softDrinkCount);
+    }
+
+    private static boolean parseIntasBool(String s) {
+        try {return Integer.parseInt(s.trim()) != 0;} catch (Exception e) {return false;}
+    }
+
+    @Override
+    public String toString() {
+    return String.format(
+        "#%d %s (%c) x%d  addons: $%.2f  subtotal: $%.2f  tax: $%.2f  total: $%.2f  [cheese:%s, olives:%s, GB:%d, SD:%d]",
+        orderId, pizzaType, pizzaSize, quantity,
+        addOnsCost, subtotal, tax, totalCost,
+        extraCheese ? "Y" : "N", extraOlives ? "Y" : "N",
+        garlicBreadCount, softDrinkCount
+    );
+
+}
 }
