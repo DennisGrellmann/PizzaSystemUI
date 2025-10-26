@@ -35,6 +35,7 @@ public class PizzaSystemUI {
         }
     }
 
+    // generate unique store id
     private int generateUniqueStoreId(int min, int max) {
         Random rand = new Random();
         while (true) {
@@ -43,12 +44,14 @@ public class PizzaSystemUI {
         }
     }
 
+    // check if store id exists
     private boolean storeIdExists(int id) {
         for (int i = 0; i < storeCount; i++) {
             if (stores[i].getStoreId() == id) return true;
         }
         return false;
     }
+    
     // read integer from user with min and max validation
     private int readInt(String prompt, int min, int max) {
         while (true) {
@@ -97,6 +100,7 @@ public class PizzaSystemUI {
             }
         }
     }
+    
     // Size Selection and using readSelection for validation
     private char SizeSelectionCheck() {
         while (true) {
@@ -107,7 +111,7 @@ public class PizzaSystemUI {
 
     // main menu 
     private void printMainMenu() {
-        System.out.println("\n=== Pizza Ordering System ===");
+        System.out.println("\nPizza Ordering System");
         System.out.println("Active Store: " + (activeIndex >= 0 ? stores[activeIndex].getStoreName() : "None"));
         System.out.println("1. Manage Stores");
         System.out.println("2. View Pizza Menu");
@@ -122,10 +126,11 @@ public class PizzaSystemUI {
         System.out.println("11. Load Store Data");
         System.out.println("12. Exit");
     }
+    
     // Manage stores, create, switch, list, delete
     private void manageStoresMenu() {
         while (true) {
-            System.out.println("\n=== Manage Stores ===");
+            System.out.println("\nManage Stores");
             System.out.println("1. Create new Store");
             System.out.println("2. Switch Active Store");
             System.out.println("3. List all Stores");
@@ -192,6 +197,8 @@ public class PizzaSystemUI {
             }
         }
     }
+    
+    // method to view pizza menu
     private void viewPizzaMenu() {
         System.out.println("\n--- Pizza Menu ---");
         System.out.println("Margherita - S:$8.00  M:$10.00  L:$12.00");
@@ -204,6 +211,7 @@ public class PizzaSystemUI {
         System.out.println("  Soft Drink (each): $" + PizzaOrder.softDrinkPrice);
         System.out.println("Tax rate: " + (int)(PizzaOrder.taxRate*100) + "%");
     }
+    
     //pizza base price retrieval
     private double getPizzaBasePrice(String pizzaType, char pizzaSize) {
         String type = pizzaType.toLowerCase();
@@ -218,6 +226,7 @@ public class PizzaSystemUI {
                 return 0.0;
         }
     }
+    
     //method for placing new order
     private void placeNewOrder() {
         PizzaStore store = stores[activeIndex];
@@ -263,7 +272,7 @@ public class PizzaSystemUI {
         }
     }
 
-
+    // generate unique order id within store
     private int generateUniqueOrderId(PizzaStore store) {
         Random r = new Random();
         while (true) {
@@ -272,13 +281,15 @@ public class PizzaSystemUI {
         }
     }
 
+    // check if order id exists in store
     private boolean orderIdExistsInStore(PizzaStore store, int orderId) {
         for (PizzaOrder o : store.getOrders()) {
             if (o.getOrderId() == orderId) return true;
         }
         return false;
     }
-   //method to compare two pizza orders
+   
+    //method to compare two pizza orders
     private void compareTwoOrders() {
         System.out.println("\n-- Compare Two Pizza Orders (by total price) --");
 
@@ -500,16 +511,17 @@ public class PizzaSystemUI {
     }
 }
 
-    
-
+    //view sales statistics
     private void viewSalesStatistics() {
         stores[activeIndex].printSalesStatistics();
     }
-    
+
+    //view all stored orders
     private void viewAllStoredOrders() {
         stores[activeIndex].listAllOrders();
     }
 
+    //save store data to file
     private void saveStoreData() {
         System.out.print("Enter filename to save (e.g., pizzasystem.txt): ");
         String name = scanner.nextLine().trim();
@@ -522,7 +534,7 @@ public class PizzaSystemUI {
         }
     }
 
-    // NEW: Prompt to overwrite current store OR create a new store (if space). If no space, must overwrite.
+    //Prompt to overwrite current store OR create a new store (if space). If no space, must overwrite.
     private void loadStoreData() {
         System.out.print("Enter filename to load: ");
         String name = scanner.nextLine().trim();
@@ -562,7 +574,7 @@ public class PizzaSystemUI {
         }
     }
 
-    
+    // main run loop
     public void run() {
         boolean exit = false;
         while (!exit) {
@@ -585,6 +597,7 @@ public class PizzaSystemUI {
         }
     }
     
+    // main entry point
     public static void main(String[] args) {
         new PizzaSystemUI().run();
     }
