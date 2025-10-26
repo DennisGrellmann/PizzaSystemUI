@@ -2,13 +2,13 @@
 // Pizza Ordering System UI
 // Dennis Grellmann c3468127 
 // 12-2pm Thursday ES105
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 
 public class PizzaStore {
@@ -52,15 +52,14 @@ public class PizzaStore {
     public boolean addOrder(PizzaOrder order) {
         if (isFull() || order == null) return false;
         orders[orderCount++] = order;
-        dailyTotalSales += order.getTotalPrice();
-        totalOrderCount++;
+        applyOrderToSats(order, +1);
         return true;
     }
 
     public boolean cancelLastOrder() {
         if (orderCount == 0) return false;
         PizzaOrder last = orders[orderCount - 1];
-        applyOrderToStats(last, -1);
+        applyOrderToSats(last, -1);
         orders[orderCount - 1] = null;
         orderCount--;
         return true;
