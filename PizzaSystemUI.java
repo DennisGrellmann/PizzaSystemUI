@@ -122,8 +122,160 @@ public class PizzaSystemUI {
         System.out.println("11. Load Store Data");
         System.out.println("12. Exit");
     }
-
+    // Manage stores, create, switch, list, delete
     private void manageStoresMenu() {
-        while (true)
+        while (true) {
+            System.out.println("\n=== Manage Stores ===");
+            System.out.println("1. Create new Store");
+            System.out.println("2. Switch Active Store");
+            System.out.println("3. List all Stores");
+            System.out.println("4. Delete all Stores");
+            System.out.println("5. Return to Main Menu");
+            int choice = readInt("Select an option (1-5): ", 1, 5);
+            if (choice == 1) {
+                if (storeCount >= MAX_STORES) {
+                    System.out.println("Maximum number of stores reached.");
+                    continue;
+                }
+                String name = "Store " + (storeCount + 1);
+                System.out.print("Enter store ID (or enter for random): ");
+                String line = scanner.nextLine().trim();
+                int id;
+                if (line.isEmpty()) {
+                    id = generateUniqueStoreId(1, 99);
+                } else {
+                    try {
+                        id = Integer.parseInt(line);
+                        if (storeIdExists(id)) {
+                            int newid = generateUniqueStoreId(1, 99);
+                            System.out.println("Store ID already exists. using Generated unique ID ." + newid);
+                            id = newid;
+                        }
+                    } catch (NumberFormatException e) {
+                        id = generateUniqueStoreId(1, 99);
+                        System.out.println("Invalid input. using Generated unique ID ." + id);
+                    }
+                }
+                stores[storeCount++] = new PizzaStore(id, name);
+                activeIndex = storeCount - 1;
+                System.out.println("Created and switched to new store: " + id + " - " + name);
+            } else if (choice == 2) {
+                if (storeCount == 0) {
+                    System.out.println("No stores available to switch.");
+                    continue;
+                }
+                int id = readInt("Enter store ID to activate: ", 1, 999999);
+                int found = -1;
+                for (int i = 0; i < storeCount; i++) if (stores[i].getStoreId() == id) { found = i; break; }
+                if (found == -1) System.out.println("Store ID not found.");
+                else { activeIndex = found; System.out.println("Active store is now #" + id + "."); }
+            } else if (c == 3) {
+                if (storeCount == 0) System.out.println("No stores created.");
+                else {
+                    for (int i = 0; i < storeCount; i++) {
+                        System.out.println((i==activeIndex ? "* " : "  ") + "#" + stores[i].getStoreId() + "  " + stores[i].getStoreName());
+                    }
+                }
+            } else if (c == 4) {
+                boolean ok = readYesNo("This will DELETE ALL stores. Are you sure");
+                if (ok) {
+                    stores = new PizzaStore[MAX_STORES];
+                    storeCount = 0;
+                    activeIndex = -1;
+                    atLeastOneStore();
+                    System.out.println("All stores deleted. A default store has been created and set active.");
+                } else {
+                    System.out.println("Delete all stores cancelled.");
+                }
+            } else {
+                return;
+            }
+        }
+    }
+    private void viewPizzaMenu() {
+        System.out.println("\n--- Pizza Menu ---");
+        System.out.println("Margherita - S:$8.00  M:$10.00  L:$12.00");
+        System.out.println("Neapolitan - S:$9.00  M:$11.00  L:$13.50");
+        System.out.println("Marinara   - S:$9.50  M:$11.50  L:$14.00");
+        System.out.println("Add-ons:");
+        System.out.println("  Extra cheese (per pizza): $" + PizzaOrder.extraCheesePrice);
+        System.out.println("  Extra olives (per pizza): $" + PizzaOrder.extraOlivesPrice);
+        System.out.println("  Garlic Bread (each): $" + PizzaOrder.garlicBreadPrice);
+        System.out.println("  Soft Drink (each): $" + PizzaOrder.softDrinkPrice);
+        System.out.println("Tax rate: " + (int)(PizzaOrder.taxRate*100) + "%");
+    }
+
+    private double getPizzaBasePrice() {
+        String type = pizzaType.toLowerCase();
+        switch (type) {
+            case "margherita":
+                return (pizzaSize == 'S' ? 8.00 : pizzaSize == 'M' ? 10.00 : 12.00);
+            case "neapolitan":
+                return (pizzaSize == 'S' ? 9.00 : pizzaSize == 'M' ? 11.00 : 13.50);
+            case "marinara":
+                return (pizzaSize == 'S' ? 9.50 : pizzaSize == 'M' ? 11.50 : 14.00);
+            default:
+                return 0.0;
+        }
+    }
+
+    private void placeNewOrder() {
+        PizzaStore store = stores[activeIndex];
+        if (store.isFull()) {
+            System.out.println("Order list is full for this store (max " + PizzaStore.MAX_ORDERS + ").");
+            return;
+        }
+        String type = readSelection("Pizza type (Margherita/Neapolitan/Marinara): ",
+                                 new String[]{"Margherita","Neapolitan","Marinara"});
+        char size = SizeSelectionCheck();
+        int qty = readInt("Quantity of pizzas (1-10): ", 1, 10);
+
+        boolean cheese = readYesNo("Add extra cheese ($1.50 per pizza)?");
+        boolean olives = readYesNo("Add extra olives ($1.00 per pizza)?");
+        int gb = readInt("Garlic breads (each $4): ", 0, 10);
+        int sd = readInt("Soft drinks (each $3): ", 0, 10);
+
+        // Order ID input with optional randomness
+        System.out.print("Enter desired order ID (blank for auto): ");
+        String raw = scanner.nextLine().trim();
+        int orderId;
+        if (raw.length() == 0) {
+            orderId = generateUniqueOrderId(store);
+        } else {
+            try {
+                orderId = Integer.parseInt(raw);
+                if (orderIdExistsInStore(store, orderId)) {
+                    int newid = generateUniqueOrderId(store);
+                    System.out.println("Duplicate Order ID. Using generated ID: " + newid);
+                    orderId = newid;
+                }
+            } catch (NumberFormatException e) {
+                orderId = generateUniqueOrderId(store);
+                System.out.println("Invalid ID. Using generated ID: " + orderId);
+            }
+        }
+
+        PizzaOrder po = new PizzaOrder(orderId, type, size, qty, cheese, olives, gb, sd);
+        if (store.addOrder(po)) {
+            System.out.println("Order added: " + po);
+        } else {
+            System.out.println("Failed to add order.");
+        }
+    }
+
+
+    private int generateUniqueOrderId(PizzaStore store) {
+        Random r = new Random();
+        while (true) {
+            int orderid = 1 + r.nextInt(9999);
+            if (!orderIdExistsInStore(store, orderid)) return orderid;
+        }
+    }
+
+    private boolean orderIdExistsInStore(PizzaStore store, int orderId) {
+        for (PizzaOrder o : store.getOrders()) {
+            if (o.getOrderId() == orderId) return true;
+        }
+        return false;
     }
 }
