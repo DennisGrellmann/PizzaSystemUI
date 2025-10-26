@@ -169,14 +169,14 @@ public class PizzaSystemUI {
                 for (int i = 0; i < storeCount; i++) if (stores[i].getStoreId() == id) { found = i; break; }
                 if (found == -1) System.out.println("Store ID not found.");
                 else { activeIndex = found; System.out.println("Active store is now #" + id + "."); }
-            } else if (c == 3) {
+            } else if (choice == 3) {
                 if (storeCount == 0) System.out.println("No stores created.");
                 else {
                     for (int i = 0; i < storeCount; i++) {
                         System.out.println((i==activeIndex ? "* " : "  ") + "#" + stores[i].getStoreId() + "  " + stores[i].getStoreName());
                     }
                 }
-            } else if (c == 4) {
+            } else if (choice == 4) {
                 boolean ok = readYesNo("This will DELETE ALL stores. Are you sure");
                 if (ok) {
                     stores = new PizzaStore[MAX_STORES];
@@ -204,8 +204,8 @@ public class PizzaSystemUI {
         System.out.println("  Soft Drink (each): $" + PizzaOrder.softDrinkPrice);
         System.out.println("Tax rate: " + (int)(PizzaOrder.taxRate*100) + "%");
     }
-
-    private double getPizzaBasePrice() {
+    //pizza base price retrieval
+    private double getPizzaBasePrice(String pizzaType, char pizzaSize) {
         String type = pizzaType.toLowerCase();
         switch (type) {
             case "margherita":
@@ -218,7 +218,7 @@ public class PizzaSystemUI {
                 return 0.0;
         }
     }
-
+    //method for placing new order
     private void placeNewOrder() {
         PizzaStore store = stores[activeIndex];
         if (store.isFull()) {
@@ -255,9 +255,9 @@ public class PizzaSystemUI {
             }
         }
 
-        PizzaOrder po = new PizzaOrder(orderId, type, size, qty, cheese, olives, gb, sd);
-        if (store.addOrder(po)) {
-            System.out.println("Order added: " + po);
+        PizzaOrder pizza = new PizzaOrder(orderId, type, size, qty, cheese, olives, gb, sd);
+        if (store.addOrder(pizza)) {
+            System.out.println("Order added: " + pizza);
         } else {
             System.out.println("Failed to add order.");
         }
@@ -278,4 +278,315 @@ public class PizzaSystemUI {
         }
         return false;
     }
+   //method to compare two pizza orders
+    private void compareTwoOrders() {
+        System.out.println("\n-- Compare Two Pizza Orders (by total price) --");
+
+        // first order
+        String t1 = readSelection("First pizza type (Margherita/Neapolitan/Marinara): ",
+                                new String[]{"Margherita","Neapolitan","Marinara"});
+        char s1 = SizeSelectionCheck();
+        int q1 = readInt("Enter quantity for first pizza: ", 1, 10);
+
+        // second order
+        String t2 = readSelection("Second pizza type (Margherita/Neapolitan/Marinara): ",
+                                new String[]{"Margherita","Neapolitan","Marinara"});
+        char s2 = SizeSelectionCheck();
+        int q2 = readInt("Enter quantity for second pizza: ", 1, 10);
+
+        // total before tax and add-ons
+        double p1 = getPizzaBasePrice(t1, s1) * q1;
+        double p2 = getPizzaBasePrice(t2, s2) * q2;
+
+        // output
+        System.out.print("Comparision before tax and add-ons:\n");
+        System.out.printf("First:  %s (%c) x%d  $%.2f%n", t1, s1, q1, p1);
+        System.out.printf("Second: %s (%c) x%d  $%.2f%n", t2, s2, q2, p2);
+
+        // verdict
+        if (p1 == p2) 
+            System.out.println("Both orders cost the same.");
+        else if (p1 < p2) 
+            System.out.println("The first order is cheaper.");
+        else 
+            System.out.println("The first order is more expensive.");
+    }
+
+    //cancel previous order
+    private void cancelLastOrder() {
+        PizzaStore store = stores[activeIndex];
+        if (store.cancelLastOrder()) System.out.println("Last order cancelled.");
+        else System.out.println("No orders to cancel.");
+    }
+
+    //Simulate daily special (doesnt add it to order to not break encapsulation)
+    private void simulateDailySpecial() {
+    System.out.println("\n-- Simulating Daily Special --");
+
+    // 1. Pick a random special offer
+    int offer = (int)(Math.random() * 3);
+    String offerMessage = "";
+    if (offer == 0) {
+        offerMessage = "Buy one, get the second pizza half price!";
+    } else if (offer == 1) {
+        offerMessage = "20% off your total order!";
+    } else { // offer == 2
+        offerMessage = "Free side with every LARGE pizza!";
+    }
+
+    System.out.println("Today's Special Offer: " + offerMessage);
+    System.out.println();
+
+    String pizzaType = readSelection(
+        "Choose pizza (Margherita/Neapolitan/Marinara): ",
+        new String[]{"Margherita","Neapolitan","Marinara"}
+    );
+
+    char pizzaSize = SizeSelectionCheck(); 
+
+    int quantity = readInt("How many pizzas (1-10): ", 1, 10);
+
+    boolean addCheese = readYesNo("Add extra cheese for $1.50 per pizza?");
+    boolean addOlives = readYesNo("Add extra olives for $1.00 per pizza?");
+
+    int garlicBreadCount = 0;
+    int softDrinkCount = 0;
+
+    if (offer == 2 && (pizzaSize == 'L')) {
+        // Free side with large pizza
+        System.out.println("Your LARGE pizza qualifies for a FREE side!");
+        System.out.println("1) Garlic bread");
+        System.out.println("2) Soft drink");
+        int sideChoice = readInt("Choose your free side (1-2): ", 1, 2);
+        if (sideChoice == 1) {
+            garlicBreadCount = 1;
+            System.out.println("Free garlic bread added.");
+        } else {
+            softDrinkCount = 1;
+            System.out.println("Free soft drink added.");
+        }
+
+        // Optionally buy extra
+        if (readYesNo("Would you like to add EXTRA garlic bread for $4.00 each?")) {
+            garlicBreadCount += readInt("How many EXTRA garlic breads: ", 0, 10);
+        }
+        if (readYesNo("Would you like to add EXTRA soft drinks for $3.00 each?")) {
+            softDrinkCount += readInt("How many EXTRA soft drinks: ", 0, 10);
+        }
+
+    } else {
+        // Normal sell if no free side is triggered
+        if (readYesNo("Add garlic bread for $4.00 each?")) {
+            garlicBreadCount = readInt("How many garlic breads: ", 1, 10);
+        }
+        if (readYesNo("Add soft drinks for $3.00 each?")) {
+            softDrinkCount = readInt("How many soft drinks: ", 1, 10);
+        }
+    }
+
+    //Calculate base pizza cost
+    double basePerPizza = getPizzaBasePrice(pizzaType, pizzaSize); 
+    double pizzaCost = basePerPizza * quantity;
+
+    //Calculate add-ons cost
+    double addOnsCost = 0.0;
+    if (addCheese) {
+        addOnsCost += 1.50 * quantity;
+    }
+    if (addOlives) {
+        addOnsCost += 1.00 * quantity;
+    }
+    addOnsCost += 4.00 * garlicBreadCount;
+    addOnsCost += 3.00 * softDrinkCount;
+
+    //Subtotal before discount/tax
+    double preTaxSubtotal = pizzaCost + addOnsCost;
+
+    // Work out discount from special
+    double discount = 0.0;
+    if (offer == 0) {
+        // Buy one get second half price
+        if (quantity >= 2) {
+            discount = basePerPizza * 0.5;
+        }
+    } else if (offer == 1) {
+        // 20% off total order (before tax)
+        discount = preTaxSubtotal * 0.20;
+    }
+
+    // Apply discount
+    double discountedSubtotal = preTaxSubtotal - discount;
+    if (discountedSubtotal < 0) {
+        discountedSubtotal = 0;
+    }
+
+    //Tax and total
+    double tax = discountedSubtotal * 0.10; // 10% tax
+    double finalTotal = discountedSubtotal + tax;
+
+    // convert to string 
+    String sAddOns           = String.format("%.2f", addOnsCost);
+    String sPreTaxSubtotal   = String.format("%.2f", preTaxSubtotal);
+    String sDiscount         = String.format("%.2f", discount);
+    String sAfterDiscount    = String.format("%.2f", discountedSubtotal);
+    String sTax              = String.format("%.2f", tax);
+    String sFinalTotal       = String.format("%.2f", finalTotal);
+
+    //Print receipt for simulation 
+    System.out.println("\n---- Simulated Receipt (Not Saved) ----");
+    System.out.println(" Pizza Type: " + pizzaType);
+    System.out.println(" Pizza Size: " + pizzaSize);
+    System.out.println(" Quantity:   " + quantity);
+    System.out.println(" Add-ons Cost:            $" + sAddOns);
+    System.out.println(" Subtotal (before disc.): $" + sPreTaxSubtotal);
+    System.out.println(" Special Discount:       -$" + sDiscount);
+    System.out.println(" Subtotal After Disc.:    $" + sAfterDiscount);
+    System.out.println(" Tax (10%):               $" + sTax);
+    System.out.println(" TOTAL DUE:               $" + sFinalTotal);
+    System.out.println("---------------------------------------");
+    System.out.println("(This was only a simulation. No order was added.)");
 }
+
+    // method to modify last order
+    private void modifyLastOrder() {
+    PizzaStore store = stores[activeIndex];
+    PizzaOrder last = store.getLastOrder();
+
+    if (last == null) {
+        System.out.println("No orders to modify.");
+        return;
+    }
+
+    System.out.println("\n-- Modify Last Order --");
+    System.out.println("Current last order: " + last);
+    System.out.println("You will now re-enter ALL values for this order.");
+
+    // Re-collect full order details (same as placing new order)
+    String newType = readSelection(
+        "Pizza type (Margherita/Neapolitan/Marinara): ",
+        new String[]{"Margherita","Neapolitan","Marinara"}
+    );
+
+    char newSize = SizeSelectionCheck();
+
+    int newQty = readInt("Quantity of pizzas (1-10): ", 1, 10);
+
+    boolean newCheese = readYesNo("Add extra cheese ($1.50 per pizza)?");
+    boolean newOlives = readYesNo("Add extra olives ($1.00 per pizza)?");
+
+    int newGb = readInt("Garlic breads (each $4): ", 0, 10);
+    int newSd = readInt("Soft drinks (each $3): ", 0, 10);
+
+    // keep the orderId 
+    int sameId = last.getOrderId();
+
+    PizzaOrder replacement = new PizzaOrder(
+        sameId,
+        newType,
+        newSize,
+        newQty,
+        newCheese,
+        newOlives,
+        newGb,
+        newSd
+    );
+
+    boolean ok = store.replaceLastOrder(replacement);
+
+    if (ok) {
+        System.out.println("Order updated: " + replacement);
+    } else {
+        System.out.println("Failed to modify order.");
+    }
+}
+
+    
+
+    private void viewSalesStatistics() {
+        stores[activeIndex].printSalesStatistics();
+    }
+    
+    private void viewAllStoredOrders() {
+        stores[activeIndex].listAllOrders();
+    }
+
+    private void saveStoreData() {
+        System.out.print("Enter filename to save (e.g., pizzasystem.txt): ");
+        String name = scanner.nextLine().trim();
+        if (name.length()==0) { System.out.println("Cancelled."); return; }
+        try {
+            stores[activeIndex].SaveToFile(new File(name));
+            System.out.println("Saved to " + name);
+        } catch (Exception e) {
+            System.out.println("Error saving file: " + e.getMessage());
+        }
+    }
+
+    // NEW: Prompt to overwrite current store OR create a new store (if space). If no space, must overwrite.
+    private void loadStoreData() {
+        System.out.print("Enter filename to load: ");
+        String name = scanner.nextLine().trim();
+        if (name.length()==0) { System.out.println("Cancelled."); return; }
+
+        boolean haveSpace = storeCount < MAX_STORES;
+
+        String mode;
+        if (!haveSpace) {
+            System.out.println("No free store slots available. The file will be loaded by OVERWRITING the current active store.");
+            mode = "o";
+        } else {
+            mode = readSelection("Load mode: overwrite current (o) or create new store (n)? ", new String[]{"o","n"});
+        }
+
+        try {
+            if (mode.equalsIgnoreCase("o")) {
+                // Overwrite current store, preserving its ID/name
+                PizzaStore loaded = PizzaStore.loadFromFile(
+                    new File(name),
+                    stores[activeIndex].getStoreId(),
+                    stores[activeIndex].getStoreName()
+                );
+                stores[activeIndex] = loaded;
+                System.out.println("Store data loaded into current active store (#" +
+                    loaded.getStoreId() + ").");
+            } else {
+                // Create new store slot
+                int id = generateUniqueStoreId(1000, 9999);
+                PizzaStore loaded = PizzaStore.loadFromFile(new File(name), id, "Loaded Store");
+                stores[storeCount++] = loaded;
+                activeIndex = storeCount - 1;
+                System.out.println("Loaded store as NEW store #" + loaded.getStoreId() + " (active).");
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading file: " + e.getMessage());
+        }
+    }
+
+    
+    public void run() {
+        boolean exit = false;
+        while (!exit) {
+            printMainMenu();
+            int choice = readInt("Choose 1-12: ", 1, 12);
+            switch (choice) {
+                case 1: manageStoresMenu(); break;
+                case 2: viewPizzaMenu(); break;
+                case 3: placeNewOrder(); break;
+                case 4: compareTwoOrders(); break;
+                case 5: simulateDailySpecial(); break;
+                case 6: modifyLastOrder(); break;
+                case 7: cancelLastOrder(); break;
+                case 8: viewSalesStatistics(); break;
+                case 9: viewAllStoredOrders(); break;
+                case 10: saveStoreData(); break;
+                case 11: loadStoreData(); break;
+                case 12: exit = true; System.out.println("Goodbye!"); break;
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        new PizzaSystemUI().run();
+    }
+}
+

@@ -79,7 +79,7 @@ public class PizzaStore {
         return orders[orderCount - 1];
     }
 
-    public PizzaOrder[] getOrdersSnapshot() {
+    public PizzaOrder[] getOrders() {
         PizzaOrder[] copy = new PizzaOrder[orderCount];
         for (int i = 0; i < orderCount; i++) copy[i] = orders[i];
         return copy;
